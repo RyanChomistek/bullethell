@@ -1,0 +1,32 @@
+{
+  "name": "bullet-hell-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start:dev": "nodemon",
+    "build": "rimraf ./build && tsc",
+    "start": "npm run build && node build/index.js",
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/socket.io": "^2.1.10",
+    "@types/vec2": "^1.6.1",
+    "@types/vec3": "0.0.29",
+    "socket.io": "^2.3.0",
+    "vec2": "^1.6.1",
+    "vec3": "^0.1.6"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.9",
+    "@types/node": "^14.0.27",
+    "jest": "^26.4.0",
+    "nodemon": "^2.0.4",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^26.2.0",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7"
+  }
+}
