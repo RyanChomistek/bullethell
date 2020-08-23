@@ -18,7 +18,8 @@ public class NetworkManager : MonoBehaviour
     [SerializeField]
     private NetworkBehavior[] m_NetworkBehaviorPrefabArray;
 
-    public Dictionary<int, NetworkBehavior> networkBehaviorMap;
+    public Dictionary<int, NetworkBehavior> NetworkBehaviorMap;
+    public Dictionary<int, PlayerController> PlayerMap;
 
     public Action OnConnect = null;
 
@@ -27,7 +28,8 @@ public class NetworkManager : MonoBehaviour
     private void Awake()
     {
         s_Instance = this;
-        networkBehaviorMap = new Dictionary<int, NetworkBehavior>();
+        NetworkBehaviorMap = new Dictionary<int, NetworkBehavior>();
+        PlayerMap = new Dictionary<int, PlayerController>();
     }
 
     // Start is called before the first frame update
@@ -46,7 +48,7 @@ public class NetworkManager : MonoBehaviour
                 firstConnection = false;
                 Debug.Log(string.Format("[name: {0}, data: {1}, sid{2}]", e.name, e.data, m_Socket.sid));
                 // OnConnect?.Invoke();
-                CreatePlayer();
+                // CreatePlayer();
                 m_Socket.Emit("refreshPlayers");
             }
         });
@@ -61,9 +63,8 @@ public class NetworkManager : MonoBehaviour
                 player.IsControlledByThisClient = true;
                 PlayerController playerController = Instantiate(m_PlayerControllerPrefab);
                 playerController.Init(player);
-                networkBehaviorMap[player.Id] = playerController;
-                m_Socket.Emit("refreshAll");
-
+                NetworkBehaviorMap[player.Id] = playerController;
+                DestroyNetworkObject(player.Id);
             }
             catch(Exception ex)
             {
@@ -74,6 +75,9 @@ public class NetworkManager : MonoBehaviour
         m_Socket.On("modifyPlayer", (SocketIOEvent e) =>
         {
             Debug.Log(e.data);
+            string json = e.data.ToString();
+            NetworkObject networkObj = JsonConvert.DeserializeObject<NetworkObject>(json);
+            ModifyNetworkObject(networkObj);
         });
 
         m_Socket.On("refreshPlayers", (SocketIOEvent e) =>
@@ -90,27 +94,77 @@ public class NetworkManager : MonoBehaviour
 
         m_Socket.On("addObject", (SocketIOEvent e) =>
         {
+            Debug.Log("add object");
             string json = e.data.ToString();
-            NetworkObject networkObj = JsonConvert.DeserializeObject<NetworkObject>(json);
-            ModifyNetworkObject(networkObj);
+            Debug.Log(json);
+            try
+            {
+                NetworkObject networkObj = JsonConvert.DeserializeObject<NetworkObject>(json);
+                ModifyNetworkObject(networkObj);
+            }
+            catch(System.Exception ex)
+            {
+                Debug.Log(ex.Message);
+            }
+        });
+
+        m_Socket.On("removePlayer", (SocketIOEvent e) =>
+        {
+            Debug.Log("remove player");
+            string json = e.data.ToString();
+            Debug.Log(json);
+            int playerId = JsonConvert.DeserializeObject<RemovePlayerResponse>(json).PlayerId;
+            DestroyNetworkObject_ServerResponse(playerId);
         });
 
         // no more socket on's after this
         m_Socket.Connect();
-        m_Socket.Emit("createPlayer");
+        // m_Socket.Emit("createPlayer");
+    }
+
+    public void DestroyNetworkObject(int id)
+    {
+        var removeReq = new RemovePlayerRequest(id);
+        //m_Socket.Emit("removePlayer", JSONObject.Create(JsonConvert.SerializeObject(removeReq)));
+    }
+
+    public bool IsControlledByLocalPlayer(int id)
+    {
+        foreach(var kvp in PlayerMap)
+        {
+            if(kvp.Key == id)
+            {
+                return kvp.Value.Player.IsControlledByThisClient;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// called from server to destroy an object
+    /// </summary>
+    /// <param name="id"></param>
+    private void DestroyNetworkObject_ServerResponse(int id)
+    {
+        if (NetworkBehaviorMap.ContainsKey(id))
+        {
+            Destroy(NetworkBehaviorMap[id].gameObject);
+            NetworkBehaviorMap.Remove(id);
+        }
     }
 
     private void ModifyNetworkObject (INetworkObject netObj)
     {
-        if (networkBehaviorMap.ContainsKey(netObj.Id))
+        if (NetworkBehaviorMap.ContainsKey(netObj.Id))
         {
-            networkBehaviorMap[netObj.Id].m_NetworkObject = netObj;
+            NetworkBehaviorMap[netObj.Id].Modify(netObj);
         }
         else
         {
             NetworkBehavior netBehaivor = Instantiate(m_NetworkBehaviorPrefabArray[netObj.PrefabIndex]);
             netBehaivor.Init(netObj);
-            networkBehaviorMap[netObj.Id] = netBehaivor;
+            NetworkBehaviorMap[netObj.Id] = netBehaivor;
         }
     }
 

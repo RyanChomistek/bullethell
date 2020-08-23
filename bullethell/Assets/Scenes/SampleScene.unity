@@ -359,6 +359,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_PlayerControllerPrefab: {fileID: 4274506854974757673, guid: e1507ee228b5c654bbd4a6970a50b7b3,
     type: 3}
+  m_NetworkBehaviorPrefabArray:
+  - {fileID: 4274506854974757673, guid: e1507ee228b5c654bbd4a6970a50b7b3, type: 3}
 --- !u!4 &683035330
 Transform:
   m_ObjectHideFlags: 0

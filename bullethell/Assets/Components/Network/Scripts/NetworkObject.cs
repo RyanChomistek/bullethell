@@ -42,7 +42,16 @@ public class NetworkObject : INetworkObject
     public int OwningPlayer { get; set; }
     public INetworkRigidbody Rigidbody { get; set; }
     public DateTime LastUpdated { get; set; }
-    
+
+    [JsonConstructor]
+    protected NetworkObject(int id, int PrefabIndex, int owningPlayer, NetworkRigidbody rigidbody, DateTime lastUpdated)
+    {
+        Id = id;
+        OwningPlayer = owningPlayer;
+        Rigidbody = rigidbody;
+        LastUpdated = lastUpdated;
+    }
+
     protected NetworkObject(int id, int PrefabIndex, int owningPlayer, INetworkRigidbody rigidbody, DateTime lastUpdated)
     {
         Id = id;

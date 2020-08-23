@@ -27,8 +27,8 @@ public class NetworkManagerEditor : Editor
         base.OnInspectorGUI();
 
         showNetObjMap = EditorGUILayout.Foldout(showNetObjMap, "NetObjMap");
-        if (showNetObjMap && m_target.networkBehaviorMap != null)
-            foreach (var kvp in m_target.networkBehaviorMap)
+        if (showNetObjMap && m_target.NetworkBehaviorMap != null)
+            foreach (var kvp in m_target.NetworkBehaviorMap)
             {
                 EditorGUILayout.LabelField($"{kvp.Key}: {kvp.Value.GetType()}");
             }

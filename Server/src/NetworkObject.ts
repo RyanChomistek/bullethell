@@ -27,6 +27,7 @@ export interface INetworkObject
     PrefabIndex: number;
     LastUpdated: Date;
     OwningPlayer: number;
+    IpAddress: string;
 }
 
 export interface INetworkGameObject extends INetworkObject

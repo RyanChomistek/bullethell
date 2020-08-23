@@ -10,8 +10,9 @@ public interface IPlayer : INetworkObject
 }
 
 public class Player : NetworkObject, IPlayer
-{
-    bool IPlayer.IsControlledByThisClient { get; set; }
+{ 
+    bool m_IsControlledByThisClient;
+    bool IPlayer.IsControlledByThisClient { get { return m_IsControlledByThisClient; } set { m_IsControlledByThisClient = value; } }
 
     public Player(int id, int PrefabIndex, int owningPlayer, INetworkRigidbody rigidbody, DateTime lastUpdated) 
         : base(id, PrefabIndex, owningPlayer, rigidbody, lastUpdated)
@@ -27,6 +28,12 @@ public class Player : NetworkObject, IPlayer
     public Player(Player other) 
         : this(other.Id, other.PrefabIndex, other.OwningPlayer, other.Rigidbody, other.LastUpdated)
     {
+    }
+
+    public Player(INetworkObject other)
+        : this(other.Id, other.PrefabIndex, other.OwningPlayer, other.Rigidbody, other.LastUpdated)
+    {
+        m_IsControlledByThisClient = false;
     }
 
     public override string ToString()

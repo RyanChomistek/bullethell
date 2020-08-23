@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 public class PlayerController : NetworkBehavior
 {
     [SerializeField]
-    public IPlayer m_Player { get { return base.m_NetworkObject as IPlayer; } protected set { base.m_NetworkObject = value; } }
+    public IPlayer Player { get { return base.m_NetworkObject as IPlayer; } protected set { base.m_NetworkObject = value; } }
     private Rigidbody2D m_RB;
 
     private void Start()
@@ -14,9 +14,15 @@ public class PlayerController : NetworkBehavior
         m_RB = GetComponent<Rigidbody2D>();
     }
 
-    public override void Init(INetworkObject player)
+    public override void Init(INetworkObject networkObject)
     {
-        base.Init(player);
+        base.Init(new Player(networkObject));
+        NetworkManager.Instance.PlayerMap.Add(networkObject.Id, this);
+    }
+
+    public override void Modify(INetworkObject networkObject)
+    {
+        Player = new Player(networkObject);
     }
 
     private void OnMove(InputValue value)
